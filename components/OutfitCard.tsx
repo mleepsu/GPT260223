@@ -65,9 +65,9 @@ export default function OutfitCard({ outfit, onFavorite, isFavorite }: Props) {
               </p>
             )}
             <div className="mt-2 flex gap-2 text-xs">
-              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('naver', item.keywords)} target="_blank">네이버쇼핑</a>
-              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('coupang', item.keywords)} target="_blank">쿠팡</a>
-              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('musinsa', item.keywords)} target="_blank">무신사</a>
+              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('naver', item.keywords)} target="_blank" rel="noreferrer noopener">네이버쇼핑</a>
+              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('coupang', item.keywords)} target="_blank" rel="noreferrer noopener">쿠팡</a>
+              <a className="rounded-full bg-white px-2 py-1 underline dark:bg-slate-900" href={createSearchUrl('musinsa', item.keywords)} target="_blank" rel="noreferrer noopener">무신사</a>
             </div>
           </li>
         ))}

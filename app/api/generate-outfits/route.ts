@@ -47,20 +47,32 @@ const buildFallbackImageUrl = (
   },
   outfit: OutfitsResponse['outfits'][number],
 ): string => {
-  const query = [
-    'korean fashion',
-    'street style',
-    input.season,
-    input.style,
-    input.situation,
-    input.gender,
-    input.preferredColors,
-    outfit.title,
-  ]
+  const label = [input.season, input.style, input.situation, input.gender, input.preferredColors]
     .filter(Boolean)
-    .join(',');
+    .join(' · ');
 
-  return `https://loremflickr.com/768/1024/${encodeURIComponent(query)}?lock=${encodeURIComponent(outfit.title)}`;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="768" height="1024" viewBox="0 0 768 1024">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#334155" />
+        </linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#bg)" />
+      <circle cx="640" cy="120" r="160" fill="rgba(148,163,184,0.25)" />
+      <circle cx="120" cy="840" r="200" fill="rgba(99,102,241,0.2)" />
+      <text x="60" y="130" fill="#f8fafc" font-size="40" font-family="Arial, sans-serif" font-weight="700">예상 코디 이미지</text>
+      <text x="60" y="210" fill="#cbd5e1" font-size="28" font-family="Arial, sans-serif">${outfit.title}</text>
+      <text x="60" y="260" fill="#cbd5e1" font-size="20" font-family="Arial, sans-serif">${label || '학생 데일리 룩'}</text>
+      <text x="60" y="330" fill="#e2e8f0" font-size="18" font-family="Arial, sans-serif">${outfit.items
+        .slice(0, 4)
+        .map((item) => `• ${item.name}`)
+        .join(' ')}</text>
+    </svg>
+  `;
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
