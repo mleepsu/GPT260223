@@ -7,7 +7,9 @@ import RecommendationForm from '@/components/RecommendationForm';
 import { RecommendationInput, OutfitsResponse } from '@/lib/schema';
 import { getApiKey, getFavorites, setFavorites } from '@/lib/storage';
 
-const cacheKeyFromInput = (input: RecommendationInput): string => `outfit_cache:${JSON.stringify(input)}`;
+const CACHE_VERSION = 'v2';
+const cacheKeyFromInput = (input: RecommendationInput): string =>
+  `outfit_cache:${CACHE_VERSION}:${JSON.stringify(input)}`;
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
@@ -35,9 +37,15 @@ export default function HomePage() {
       const cacheKey = cacheKeyFromInput(input);
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        setOutfits(JSON.parse(cached).outfits);
-        setLoading(false);
-        return;
+        const parsed = JSON.parse(cached);
+        const hasPreviewImages = Array.isArray(parsed?.outfits)
+          && parsed.outfits.every((outfit: any) => typeof outfit?.previewImageUrl === 'string' && outfit.previewImageUrl.length > 0);
+
+        if (hasPreviewImages) {
+          setOutfits(parsed.outfits);
+          setLoading(false);
+          return;
+        }
       }
 
       const response = await fetch('/api/generate-outfits', {
