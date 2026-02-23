@@ -2,7 +2,6 @@
 
 import { createSearchUrl } from '@/lib/searchLinks';
 import { OutfitsResponse } from '@/lib/schema';
-import { useEffect, useState } from 'react';
 
 type Props = {
   outfit: OutfitsResponse['outfits'][number];
@@ -11,12 +10,6 @@ type Props = {
 };
 
 export default function OutfitCard({ outfit, onFavorite, isFavorite }: Props) {
-  const [imageSrc, setImageSrc] = useState(outfit.previewImageUrl ?? outfit.previewImageFallbackUrl ?? '');
-
-  useEffect(() => {
-    setImageSrc(outfit.previewImageUrl ?? outfit.previewImageFallbackUrl ?? '');
-  }, [outfit.previewImageFallbackUrl, outfit.previewImageUrl]);
-
   return (
     <article className="overflow-hidden rounded-2xl border border-white/50 bg-white/90 p-4 shadow-lg shadow-slate-200/50 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-black/30">
       <header className="mb-4 flex items-start justify-between gap-2">
@@ -37,26 +30,12 @@ export default function OutfitCard({ outfit, onFavorite, isFavorite }: Props) {
         </button>
       </header>
 
-      {imageSrc && (
-        <div className="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
-          <img
-            src={imageSrc}
-            alt={`${outfit.title} 예상 코디 이미지`}
-            className="aspect-[3/4] h-auto w-full object-cover"
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => {
-              if (imageSrc !== outfit.previewImageFallbackUrl && outfit.previewImageFallbackUrl) {
-                setImageSrc(outfit.previewImageFallbackUrl);
-              }
-            }}
-          />
-        </div>
-      )}
-
       <ul className="space-y-3">
         {outfit.items.map((item, idx) => (
-          <li key={`${item.name}-${idx}`} className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800/80">
+          <li
+            key={`${item.name}-${idx}`}
+            className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800/80"
+          >
             <p className="font-medium">[{item.category}] {item.name}</p>
             <p className="text-xs">키워드: {item.keywords.join(', ')}</p>
             <p className="text-xs">

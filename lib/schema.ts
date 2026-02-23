@@ -44,8 +44,6 @@ const outfitSchema = z.object({
   vibe: z.string(),
   season: z.string(),
   situation: z.string(),
-  previewImageUrl: z.string().url().optional(),
-  previewImageFallbackUrl: z.string().url().optional(),
   items: z.array(itemSchema).min(1),
   totalPriceKRWMin: z.number().int().nonnegative(),
   totalPriceKRWMax: z.number().int().nonnegative(),

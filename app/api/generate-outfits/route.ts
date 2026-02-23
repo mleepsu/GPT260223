@@ -1,92 +1,6 @@
 import { maskApiKey, requestGeminiOutfits } from '@/lib/gemini';
-import { OutfitsResponse, recommendationInputSchema } from '@/lib/schema';
+import { recommendationInputSchema } from '@/lib/schema';
 import { NextRequest, NextResponse } from 'next/server';
-
-const escapeXml = (value: string): string =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-
-const buildPreviewImageUrl = (
-  input: {
-    gender?: string;
-    grade?: string;
-    heightBody?: string;
-    style: string;
-    situation: string;
-    season: string;
-    preferredColors?: string;
-  },
-  outfit: OutfitsResponse['outfits'][number],
-): string => {
-  const topItems = outfit.items.slice(0, 4).map((item) => item.name).join(', ');
-  const prompt = [
-    'realistic Korean student street fashion photo',
-    `${input.season} season`,
-    `style: ${input.style}`,
-    `situation: ${input.situation}`,
-    input.gender ? `gender: ${input.gender}` : '',
-    input.heightBody ? `body: ${input.heightBody}` : '',
-    input.grade ? `grade: ${input.grade}` : '',
-    input.preferredColors ? `color palette: ${input.preferredColors}` : '',
-    `outfit title: ${outfit.title}`,
-    `items: ${topItems}`,
-    'natural lighting, full body, high detail, no text, safe for teens',
-  ]
-    .filter(Boolean)
-    .join(', ');
-
-  const seedSource = `${outfit.title}-${outfit.vibe}-${input.style}-${input.situation}`;
-  const seed = [...seedSource].reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const encodedPrompt = encodeURIComponent(prompt);
-  return `https://image.pollinations.ai/prompt/${encodedPrompt}?width=768&height=1024&seed=${seed}&nologo=true`;
-};
-
-const buildFallbackImageUrl = (
-  input: {
-    gender?: string;
-    style: string;
-    situation: string;
-    season: string;
-    preferredColors?: string;
-  },
-  outfit: OutfitsResponse['outfits'][number],
-): string => {
-  const label = [input.season, input.style, input.situation, input.gender, input.preferredColors]
-    .filter(Boolean)
-    .join(' · ');
-  const safeTitle = escapeXml(outfit.title);
-  const safeLabel = escapeXml(label || '학생 데일리 룩');
-  const safeItems = escapeXml(
-    outfit.items
-      .slice(0, 4)
-      .map((item) => `• ${item.name}`)
-      .join(' '),
-  );
-
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="768" height="1024" viewBox="0 0 768 1024">
-      <defs>
-        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#0f172a" />
-          <stop offset="100%" stop-color="#334155" />
-        </linearGradient>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#bg)" />
-      <circle cx="640" cy="120" r="160" fill="rgba(148,163,184,0.25)" />
-      <circle cx="120" cy="840" r="200" fill="rgba(99,102,241,0.2)" />
-      <text x="60" y="130" fill="#f8fafc" font-size="40" font-family="Arial, sans-serif" font-weight="700">예상 코디 이미지</text>
-      <text x="60" y="210" fill="#cbd5e1" font-size="28" font-family="Arial, sans-serif">${safeTitle}</text>
-      <text x="60" y="260" fill="#cbd5e1" font-size="20" font-family="Arial, sans-serif">${safeLabel}</text>
-      <text x="60" y="330" fill="#e2e8f0" font-size="18" font-family="Arial, sans-serif">${safeItems}</text>
-    </svg>
-  `;
-
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const apiKey = req.headers.get('x-user-gemini-key')?.trim();
@@ -98,15 +12,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const json = await req.json();
     const input = recommendationInputSchema.parse(json);
     const outfits = await requestGeminiOutfits(apiKey, input);
-    const enriched = {
-      outfits: outfits.outfits.map((outfit) => ({
-        ...outfit,
-        previewImageUrl: outfit.previewImageUrl ?? buildPreviewImageUrl(input, outfit),
-        previewImageFallbackUrl:
-          outfit.previewImageFallbackUrl ?? buildFallbackImageUrl(input, outfit),
-      })),
-    };
-    return NextResponse.json(enriched, { status: 200 });
+    return NextResponse.json(outfits, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : '알 수 없는 오류';
     console.error('[generate-outfits]', {

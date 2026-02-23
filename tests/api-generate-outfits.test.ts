@@ -102,9 +102,6 @@ describe('POST /api/generate-outfits', () => {
       headers: { 'Content-Type': 'application/json', 'x-user-gemini-key': 'test-key' },
     });
     const res = await POST(req as any);
-    const data = await res.json();
     expect(res.status).toBe(200);
-    expect(data.outfits[0].previewImageUrl).toContain('image.pollinations.ai');
-    expect(data.outfits[0].previewImageFallbackUrl).toContain('data:image/svg+xml');
   });
 });
