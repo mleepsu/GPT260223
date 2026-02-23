@@ -30,6 +30,18 @@ export default function OutfitCard({ outfit, onFavorite, isFavorite }: Props) {
         </button>
       </header>
 
+      {outfit.previewImageUrl && (
+        <div className="mb-3 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+          <img
+            src={outfit.previewImageUrl}
+            alt={`${outfit.title} 예상 코디 이미지`}
+            className="h-auto w-full object-cover"
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      )}
+
       <ul className="space-y-3">
         {outfit.items.map((item, idx) => (
           <li key={`${item.name}-${idx}`} className="rounded-md bg-slate-100 p-3 text-sm dark:bg-slate-800">
