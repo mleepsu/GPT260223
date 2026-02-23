@@ -1,6 +1,6 @@
 import { OutfitsResponse, RecommendationInput, outfitsResponseSchema } from '@/lib/schema';
 
-const MODEL_NAME = 'gemini-3-flash-preview';
+const MODEL_NAMES = ['gemini-3-flash-preview', 'gemini-2.0-flash'];
 
 const responseSchema = {
   type: 'object',
@@ -120,46 +120,38 @@ export const requestGeminiOutfits = async (
     },
   };
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-      },
-      body: JSON.stringify(body),
-    },
-  );
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API 오류(${response.status}): ${errorText.slice(0, 500)}`);
-  }
-
-  const data = await response.json();
-  const text = extractText(data);
-
-  try {
-    return parseOutfitsResponse(text);
-  } catch {
-    const retryResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
+  for (const modelName of MODEL_NAMES) {
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      },
-    );
+      );
 
-    if (!retryResponse.ok) {
-      throw new Error(`Gemini 재시도 실패(${retryResponse.status})`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        lastError = new Error(`Gemini API 오류(${response.status}): ${errorText.slice(0, 500)}`);
+        if (response.status < 500 && response.status !== 429) break;
+        continue;
+      }
+
+      const data = await response.json();
+
+      try {
+        return parseOutfitsResponse(extractText(data));
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Gemini 응답 파싱 실패');
+      }
     }
-
-    const retryData = await retryResponse.json();
-    return parseOutfitsResponse(extractText(retryData));
   }
+
+  throw lastError ?? new Error('Gemini 추천 생성에 실패했습니다.');
 };
