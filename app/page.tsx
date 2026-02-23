@@ -7,7 +7,9 @@ import RecommendationForm from '@/components/RecommendationForm';
 import { RecommendationInput, OutfitsResponse } from '@/lib/schema';
 import { getApiKey, getFavorites, setFavorites } from '@/lib/storage';
 
-const cacheKeyFromInput = (input: RecommendationInput): string => `outfit_cache:${JSON.stringify(input)}`;
+const CACHE_VERSION = 'v2';
+const cacheKeyFromInput = (input: RecommendationInput): string =>
+  `outfit_cache:${CACHE_VERSION}:${JSON.stringify(input)}`;
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
@@ -35,9 +37,15 @@ export default function HomePage() {
       const cacheKey = cacheKeyFromInput(input);
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        setOutfits(JSON.parse(cached).outfits);
-        setLoading(false);
-        return;
+        const parsed = JSON.parse(cached);
+        const hasPreviewImages = Array.isArray(parsed?.outfits)
+          && parsed.outfits.every((outfit: any) => typeof outfit?.previewImageUrl === 'string' && outfit.previewImageUrl.length > 0);
+
+        if (hasPreviewImages) {
+          setOutfits(parsed.outfits);
+          setLoading(false);
+          return;
+        }
       }
 
       const response = await fetch('/api/generate-outfits', {
@@ -76,15 +84,15 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl space-y-4 p-4">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold">학생 가성비 코디 추천 카드</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-300">현실 예산으로 예쁜 룩 3~5개 추천</p>
-        <Link className="underline" href="/settings">API Key 설정하기</Link>
+    <main className="mx-auto max-w-4xl space-y-6 px-4 py-8">
+      <header className="rounded-2xl border border-white/40 bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white shadow-xl shadow-slate-400/30">
+        <h1 className="text-3xl font-bold tracking-tight">학생 가성비 코디 추천 카드</h1>
+        <p className="mt-2 text-sm text-slate-100/90">입력한 조건으로 맞춤 코디와 예상 이미지까지 한 번에 추천해드려요.</p>
+        <Link className="mt-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-sm underline underline-offset-2" href="/settings">API Key 설정하기</Link>
       </header>
 
       <RecommendationForm onSubmit={onSubmit} loading={loading} />
-      {message && <p className="rounded bg-amber-100 p-2 text-sm text-amber-800">{message}</p>}
+      {message && <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{message}</p>}
 
       <section className="space-y-3" aria-live="polite">
         {outfits.map((outfit) => (

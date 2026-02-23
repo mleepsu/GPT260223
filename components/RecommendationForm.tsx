@@ -30,9 +30,9 @@ export default function RecommendationForm({ onSubmit, loading }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-xl border bg-white p-4 dark:bg-slate-900">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-white/50 bg-white/90 p-5 shadow-lg shadow-slate-200/60 backdrop-blur dark:border-slate-700 dark:bg-slate-900/85 dark:shadow-black/20">
       <h2 className="text-lg font-semibold">코디 조건 입력</h2>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {[
           ['gender', '성별(선택)'],
           ['grade', '학년(선택)'],
@@ -46,7 +46,7 @@ export default function RecommendationForm({ onSubmit, loading }: Props) {
           <label className="text-sm" key={field}>
             {label}
             <input
-              className="mt-1 w-full rounded border p-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:focus:ring-slate-700"
               value={String(form[field as keyof RecommendationInput] ?? '')}
               onChange={(e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))}
             />
@@ -57,7 +57,7 @@ export default function RecommendationForm({ onSubmit, loading }: Props) {
         예산 상한(KRW)
         <input
           type="number"
-          className="mt-1 w-full rounded border p-2 text-sm"
+          className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:focus:ring-slate-700"
           value={form.budgetKRWMax}
           onChange={(e) => setForm((prev) => ({ ...prev, budgetKRWMax: Number(e.target.value) || 0 }))}
           min={10000}
@@ -71,7 +71,7 @@ export default function RecommendationForm({ onSubmit, loading }: Props) {
         />
         교복 위 코디 포함
       </label>
-      <button className="w-full rounded bg-slate-900 px-4 py-2 text-white" disabled={loading} type="submit">
+      <button className="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-white shadow-md shadow-slate-300 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70 dark:shadow-slate-950" disabled={loading} type="submit">
         {loading ? '생성 중...' : '코디 추천 생성'}
       </button>
     </form>
