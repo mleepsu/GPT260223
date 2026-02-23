@@ -2,7 +2,7 @@
 
 import { createSearchUrl } from '@/lib/searchLinks';
 import { OutfitsResponse } from '@/lib/schema';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Props = {
   outfit: OutfitsResponse['outfits'][number];
@@ -12,6 +12,10 @@ type Props = {
 
 export default function OutfitCard({ outfit, onFavorite, isFavorite }: Props) {
   const [imageSrc, setImageSrc] = useState(outfit.previewImageUrl ?? outfit.previewImageFallbackUrl ?? '');
+
+  useEffect(() => {
+    setImageSrc(outfit.previewImageUrl ?? outfit.previewImageFallbackUrl ?? '');
+  }, [outfit.previewImageFallbackUrl, outfit.previewImageUrl]);
 
   return (
     <article className="overflow-hidden rounded-2xl border border-white/50 bg-white/90 p-4 shadow-lg shadow-slate-200/50 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-black/30">
