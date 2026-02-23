@@ -44,6 +44,7 @@ const outfitSchema = z.object({
   vibe: z.string(),
   season: z.string(),
   situation: z.string(),
+  previewImageUrl: z.string().url().optional(),
   items: z.array(itemSchema).min(1),
   totalPriceKRWMin: z.number().int().nonnegative(),
   totalPriceKRWMax: z.number().int().nonnegative(),
@@ -51,7 +52,7 @@ const outfitSchema = z.object({
 });
 
 export const outfitsResponseSchema = z.object({
-  outfits: z.array(outfitSchema).min(3).max(5),
+  outfits: z.array(outfitSchema).min(1).max(5),
 });
 
 export type RecommendationInput = z.infer<typeof recommendationInputSchema>;
